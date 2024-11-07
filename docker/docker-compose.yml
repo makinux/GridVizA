@@ -1,0 +1,13 @@
+version: "3"
+services:
+  foss4g-nssdemo-2024:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    ports:
+      - 80:80
+    expose:
+      - "80"
+    volumes: 
+     - ../htdocs:/var/www/foss4g_demo/htdocs
+      

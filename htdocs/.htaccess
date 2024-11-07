@@ -1,0 +1,3 @@
+AddType application/octet-stream terrain
+AddEncoding gzip terrain
+

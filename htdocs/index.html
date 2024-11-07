@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <style>
+        #toolbar {
+            margin: 5px;
+            padding: 2px 5px;
+            position: absolute;
+            z-index: 9999;
+            color: #fff;
+        }
+
+        input {
+            width: 70px;
+        }
+
+        #tilePath, #terrainPath {
+            width: 200px;
+        }
+    </style>
+    <script src="./js/lib/Cesium-1.109/Cesium.js"></script>
+    <link href="./js/lib/Cesium-1.109/Widgets/widgets.css" rel="stylesheet">
+    <script type="text/javascript" src="/js/lib/geotiffjs/geotiff.bundle.js"></script>
+    <!-- jQuery -->
+    <script src="./js/lib/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+    <div id="cesiumContainer">
+        <div id="toolbar">
+            <table>
+                <tr>
+                    <td>最小値</td>
+                    <td>
+                        <input type="text" id="RangeMin">
+                    </td>
+                </tr>
+                <tr>
+                    <td>最大値</td>
+                    <td>
+                        <input type="text" id="RangeMax">
+                    </td>
+                </tr>
+                <tr>
+                    <td>曲率係数</td>
+                    <td>
+                        <input type="text" id="curvatureArg">
+                    </td>
+                </tr>
+                <tr>
+                    <td>傾斜角係数</td>
+                    <td>
+                        <input type="text" id="slopeArg">
+                    </td>
+                </tr>
+                <tr>
+                    <td>カラーマップ透過度</td>
+                    <td>
+                        <input type="text" id="depthTr">
+                    </td>
+                </tr>
+                <tr>
+                    <td>等高線間隔</td>
+                    <td>
+                        <input type="text" id="contourInterval">
+                    </td>
+                </tr>
+                <tr>
+                    <td>モデル透過度</td>
+                    <td>
+                        <input type="text" id="modelTr">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <button id="settingBtn">適用</button>
+                    </td>
+                    <td>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript" src="js/main.js"></script>
+<script>
+    init();
+</script>
+
+</html>
