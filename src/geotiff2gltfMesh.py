@@ -16,7 +16,7 @@ parser.add_argument('gltf_filename')
 
 args = parser.parse_args()
 
-# geotiff画像から緯度経度の配列を取得
+# Extract latitude and longitude arrays from the Geotiff image
 def get_lonlat_from_geotiff(ds):
   Xsize = ds.RasterXSize
   Ysize = ds.RasterYSize
@@ -32,7 +32,7 @@ def get_lonlat_from_geotiff(ds):
   return lon_tick, lat_tick
 
 def xyz_to_ecef(lon, lat, alt):
-  # WGS84座標をECEF座標に変換
+  # Convert WGS84 coordinates to ECEF coordinates
   x, y, z = pm.geodetic2ecef(lat, lon, alt)
   return x, y, z
 
@@ -125,15 +125,15 @@ def create_gltf(points, triangles, lonlat_list, idx_list, filename):
 
   gltf.save(filename)
 
-# geotiff読み込み
+# Load Geotiff
 ds = gdal.Open(args.geotiff_filename, gdal.GA_ReadOnly)
 geotiff_data = np.array([ds.GetRasterBand(i + 1).ReadAsArray() for i in range(ds.RasterCount)])
 print(geotiff_data.shape)
 
-# 緯度経度の配列
+# Latitude/longitude arrays
 lon_list, lat_list = get_lonlat_from_geotiff(ds)
 
-# 点群データ作成
+# Create point-cloud source data
 idx_list = []
 lonlat_list = []
 points_ecef_tmp = []
@@ -146,14 +146,14 @@ for lon_idx, lon in enumerate(lon_list):
 points_ecef = np.array(points_ecef_tmp, dtype=np.float32)
 points_ecef_mesh = np.array(points_ecef_tmp, dtype=np.float32)
 
-# メッシュ作成
-# 点の法線推定
+# Build mesh
+# Estimate point normals
 ptCloud = o3d.geometry.PointCloud()
 ptCloud.points = o3d.utility.Vector3dVector(points_ecef_mesh)
 ptCloud.estimate_normals()
 ptCloud.orient_normals_consistent_tangent_plane(100)
 
-# メッシュ再構成
+# Reconstruct mesh
 distances = ptCloud.compute_nearest_neighbor_distance()
 avg_dist = np.mean(distances)
 radius = 2*avg_dist   
@@ -162,7 +162,7 @@ recMeshBPA = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
         ptCloud, o3d.utility.DoubleVector(radii))
 triangles = np.array(recMeshBPA.triangles, dtype=np.uint32)
 
-# GLTFファイルを作成
+# Create GLTF file
 create_gltf(points_ecef, triangles, np.array(lonlat_list, dtype=np.float32), np.array(idx_list, dtype=np.uint32), args.gltf_filename)
 
 print("done")

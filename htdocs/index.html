@@ -1,9 +1,25 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #cesiumContainer {
+            position: fixed;
+            inset: 0;
+        }
+
         #toolbar {
             margin: 5px;
             padding: 2px 5px;
@@ -14,6 +30,10 @@
 
         input {
             width: 70px;
+        }
+
+        #samplePreset {
+            width: 240px;
         }
 
         #tilePath, #terrainPath {
@@ -32,50 +52,56 @@
         <div id="toolbar">
             <table>
                 <tr>
-                    <td>最小値</td>
+                    <td>Sample preset</td>
+                    <td>
+                        <select id="samplePreset"></select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Minimum</td>
                     <td>
                         <input type="text" id="RangeMin">
                     </td>
                 </tr>
                 <tr>
-                    <td>最大値</td>
+                    <td>Maximum</td>
                     <td>
                         <input type="text" id="RangeMax">
                     </td>
                 </tr>
                 <tr>
-                    <td>曲率係数</td>
+                    <td>Curvature coefficient</td>
                     <td>
                         <input type="text" id="curvatureArg">
                     </td>
                 </tr>
                 <tr>
-                    <td>傾斜角係数</td>
+                    <td>Slope-angle coefficient</td>
                     <td>
                         <input type="text" id="slopeArg">
                     </td>
                 </tr>
                 <tr>
-                    <td>カラーマップ透過度</td>
+                    <td>Color-map opacity</td>
                     <td>
                         <input type="text" id="depthTr">
                     </td>
                 </tr>
                 <tr>
-                    <td>等高線間隔</td>
+                    <td>Contour interval</td>
                     <td>
                         <input type="text" id="contourInterval">
                     </td>
                 </tr>
                 <tr>
-                    <td>モデル透過度</td>
+                    <td>Model opacity</td>
                     <td>
                         <input type="text" id="modelTr">
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <button id="settingBtn">適用</button>
+                        <button id="settingBtn">Apply</button>
                     </td>
                     <td>
                     </td>

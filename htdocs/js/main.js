@@ -1,83 +1,134 @@
 
-// ---------- 設定項目(GraphCastで予測された2023年12月の全球気圧データ) ---------------------------
+const samplePresets = {
+  graphcast_mesh_pressure: {
+    label: "GraphCast pressure (mesh)",
+    modelPath: "./data/sample_graphcast/model_mesh.glb",
+    geotiffUrl: "./data/sample_graphcast/pres_geotiff",
+    startDateTime: "2023/12/07 06:00:00",
+    endDateTime: "2023/12/17 03:00:00",
+    timeStep: 6,
+    heightBuf: "10000.0",
+    heightOffset: "10000.0",
+    zscale: "1.0",
+    zmin: "947.253515625",
+    zmax: "1058.2825",
+  },
+  graphcast_pointcloud_pressure: {
+    label: "GraphCast pressure (point cloud)",
+    modelPath: "./data/sample_graphcast/model_pointcloud.glb",
+    geotiffUrl: "./data/sample_graphcast/pres_geotiff",
+    startDateTime: "2023/12/07 06:00:00",
+    endDateTime: "2023/12/17 03:00:00",
+    timeStep: 6,
+    heightBuf: "10000.0",
+    heightOffset: "10000.0",
+    zscale: "1.0",
+    zmin: "947.253515625",
+    zmax: "1058.2825",
+  },
+  typhoon7_pressure_202308: {
+    label: "Typhoon 7 pressure (Aug 2023)",
+    modelPath: "./data/sample_202308/model_mesh_20230814_20230816.glb",
+    geotiffUrl: "./data/sample_202308/pres_geotiff",
+    startDateTime: "2023/08/14 00:00:00",
+    endDateTime: "2023/08/16 23:00:00",
+    timeStep: 1,
+    heightBuf: "10000.0",
+    heightOffset: "10000.0",
+    zscale: "0.01",
+    zmin: "966.761484375",
+    zmax: "1017.174296875",
+  },
+  typhoon7_rain_202308: {
+    label: "Typhoon 7 rain (Aug 2023)",
+    modelPath: "./data/sample_202308/model_mesh_20230814_20230816.glb",
+    geotiffUrl: "./data/sample_202308/rain_geotiff",
+    startDateTime: "2023/08/14 00:00:00",
+    endDateTime: "2023/08/16 23:00:00",
+    timeStep: 1,
+    heightBuf: "10000.0",
+    heightOffset: "10000.0",
+    zscale: "1.0",
+    zmin: "0.0",
+    zmax: "100.1223220825",
+  },
+  pressure_202407: {
+    label: "Pressure sample (Jul 2024)",
+    modelPath: "./data/sample_202407/model_mesh_20240711_20240713.glb",
+    geotiffUrl: "./data/sample_202407/pres_geotiff",
+    startDateTime: "2024/07/11 00:00:00",
+    endDateTime: "2024/07/14 23:00:00",
+    timeStep: 1,
+    heightBuf: "10000.0",
+    heightOffset: "10000.0",
+    zscale: "0.01",
+    zmin: "966.761484375",
+    zmax: "1017.174296875",
+  },
+};
 
-const modelPath = "./data/sample_graphcast/model_mesh.glb"; // glTFモデルパス
+const defaultSamplePresetKey = "graphcast_mesh_pressure";
+const queryParams = new URLSearchParams(window.location.search);
+const requestedSamplePresetKey = queryParams.get("sample");
+const selectedSamplePresetKey = Object.prototype.hasOwnProperty.call(samplePresets, requestedSamplePresetKey)
+  ? requestedSamplePresetKey
+  : defaultSamplePresetKey;
+const selectedSamplePreset = samplePresets[selectedSamplePresetKey];
 
-const geotiffUrl = "./data/sample_graphcast/pres_geotiff"; // Geotiffデータ読み込み先（${geotiffUrl}/1.tif、${geotiffUrl}/2.tif、...）
-const startDateTime = Date.parse("2023/12/07 06:00:00"); // 再生開始日時
-const endDateTime = Date.parse("2023/12/17 03:00:00"); // 再生終了日時
-const timeStep = 6; // 時系列データの時間ステップ（hour）
-
-const heightBuf = "10000.0"; // 高さのスケール
-const heightOffset = "10000.0"; // 高さのオフセット
-
-const zscale = "1.0"; // 時系列データの値のスケール
-const zmin = "947.253515625"; // 時系列データ最小値（zscale適用後の値）
-const zmax = "1058.2825"; // 時系列データ最大値（zscale適用後の値）
-
-// --------------------------------------------------------------------------------------------*/
-
-/*// ---------- 設定項目(2023年8月の台風7号の気圧データ) -------------------------------------------
-
-const modelPath = "./data/sample_202308/model_mesh_20230814_20230816.glb"; // glTFモデルパス
-
-const geotiffUrl = "./data/sample_202308/pres_geotiff"; // Geotiffデータ読み込み先（${geotiffUrl}/1.tif、${geotiffUrl}/2.tif、...）
-const startDateTime = Date.parse("2023/08/14 00:00:00"); // 再生開始日時
-const endDateTime = Date.parse("2023/08/16 23:00:00"); // 再生終了日時
-const timeStep = 1; // 時系列データの時間ステップ（hour）
-
-const heightBuf = "10000.0"; // 高さのスケール
-const heightOffset = "10000.0"; // 高さのオフセット
-
-const zscale = "0.01"; // 時系列データの値のスケール
-const zmin = "966.761484375"; // 時系列データ最小値（zscale適用後の値）
-const zmax = "1017.174296875"; // 時系列データ最大値（zscale適用後の値）
-
-// --------------------------------------------------------------------------------------------*/
-
-/*// ---------- 設定項目(2023年8月の台風7号の雨量データ) -------------------------------------------
-
-const modelPath = "./data/sample_202308/model_mesh_20230814_20230816.glb"; // glTFモデルパス
-
-const geotiffUrl = "./data/sample_202308/rain_geotiff"; // Geotiffデータ読み込み先（${geotiffUrl}/1.tif、${geotiffUrl}/2.tif、...）
-const startDateTime = Date.parse("2023/08/14 00:00:00"); // 再生開始日時
-const endDateTime = Date.parse("2023/08/16 23:00:00"); // 再生終了日時
-const timeStep = 1; // 時系列データの時間ステップ（hour）
-
-const heightBuf = "10000.0"; // 高さのスケール
-const heightOffset = "10000.0"; // 高さのオフセット
-
-const zscale = "1.0"; // 時系列データの値のスケール
-const zmin = "0.0"; // 時系列データ最小値（zscale適用後の値）
-const zmax = "100.1223220825"; // 時系列データ最大値（zscale適用後の値）
-
-// --------------------------------------------------------------------------------------------*/
+const modelPath = selectedSamplePreset.modelPath; // Path to glTF model
+const geotiffUrl = selectedSamplePreset.geotiffUrl; // Geotiff data source directory (${geotiffUrl}/1.tif, ${geotiffUrl}/2.tif, ...)
+const startDateTime = Date.parse(selectedSamplePreset.startDateTime); // Animation start time
+const endDateTime = Date.parse(selectedSamplePreset.endDateTime); // Animation end time
+const timeStep = selectedSamplePreset.timeStep; // Time step in hours for time-series data
+const heightBuf = selectedSamplePreset.heightBuf; // Height scale
+const heightOffset = selectedSamplePreset.heightOffset; // Height offset
+const zscale = selectedSamplePreset.zscale; // Value scale
+const zmin = selectedSamplePreset.zmin; // Minimum time-series value (after z-scale)
+const zmax = selectedSamplePreset.zmax; // Maximum time-series value (after z-scale)
+const targetLoopSeconds = 10; // Target playback loop duration in real seconds
+const timelineDurationSeconds = Math.max(1, (endDateTime - startDateTime) / 1000);
+const playbackMultiplier = timelineDurationSeconds / targetLoopSeconds;
 
 
 var viewer;
 let tileset;
 const instances = [];
 
-const position = new Cesium.Cartesian3(0, 0, 0); // glTFモデルの表示位置
-const hpr = Cesium.HeadingPitchRoll.fromDegrees(0.0, 90.0, 90.0); // glTFモデルの回転
+const position = new Cesium.Cartesian3(0, 0, 0); // glTF model position
+const hpr = Cesium.HeadingPitchRoll.fromDegrees(0.0, 90.0, 90.0); // glTF model rotation
 
-// 時間のリスト作成
+// Build animation time list
 const timeList = [];
 for (let targetTime = startDateTime; targetTime <= endDateTime; targetTime += (3600000 * timeStep)) {
   timeList.push(new Date(targetTime));
 }
 const bandNumber = timeList.length;
 
-// geotiffデータ格納用
+// Geotiff data storage
 const geotiffDataList = {};
-// 表示中のgeotiffデータのインデックス
+// Index of geotiff currently shown
 let geotiffDataIdx = 0;
 let geotiffDataSize;
 
 let model;
 let pointCloudWaveShader;
 
+function setupSamplePresetSelector() {
+  const $samplePreset = $("#samplePreset");
+  if ($samplePreset.length === 0) return;
+
+  for (const [presetKey, preset] of Object.entries(samplePresets)) {
+    $samplePreset.append(
+      $("<option></option>").val(presetKey).text(preset.label)
+    );
+  }
+
+  $samplePreset.val(selectedSamplePresetKey);
+}
+
 async function init() {
+  setupSamplePresetSelector();
+
   $("#RangeMin").val(zmin);
   $("#RangeMax").val(zmax);
   $("#curvatureArg").val(20000);
@@ -87,26 +138,29 @@ async function init() {
   $("#modelTr").val(1.0);
 
   viewer = new Cesium.Viewer("cesiumContainer", {
+    fullscreenButton: true,
     baseLayerPicker: false,
     baseLayer: new Cesium.ImageryLayer(new Cesium.OpenStreetMapImageryProvider({
       url: "https://tile.openstreetmap.org/"
     }))
   });
   var scene = viewer.scene;
-  scene.sunBloom = false; // 太陽を表示しない
-  scene.sun.show = false; // 太陽を表示しない
-  scene.skyBox.show = false; // 星を表示しない
+    // Hide celestial visuals
+    scene.sunBloom = false; // Hide sun bloom
+    scene.sun.show = false; // Hide the sun
+    scene.skyBox.show = false; // Hide the skybox
   scene.moon.show = false;
   scene.shadowMap.enabled = false;
   scene.fog.enabled = false;
   scene.globe.showGroundAtmosphere = false;
 
   var cesiumClock = viewer.clock;
-  cesiumClock.clockRange = Cesium.ClockRange.CLAMPED;
-  // タイムライン再生時の動作
+  cesiumClock.clockRange = Cesium.ClockRange.LOOP_STOP;
+  cesiumClock.multiplier = playbackMultiplier;
+  // Behavior during timeline playback
   cesiumClock.onTick.addEventListener(animationUpdate);
-  // 初期状態ではアニメーションは停止
-  cesiumClock.shouldAnimate = false;
+  // Start animation automatically
+  cesiumClock.shouldAnimate = true;
 
   cesiumClock.startTime = Cesium.JulianDate.fromIso8601(
     timeList[0].toISOString()
@@ -123,7 +177,7 @@ async function init() {
     timeList[0].toISOString()
   );
   
-  // geotiff初期読み込み
+  // Initial geotiff loading
   console.log("georiff load.");
   await loadGeotiffData();
   geotiffDataSize = {
@@ -430,15 +484,15 @@ async function init() {
   });
 }
 
-// タイムライン変更時の処理
+// Timeline change processing
 let onTickPrevTime = null;
 async function animationUpdate() {
   let currentTime = Cesium.JulianDate.toDate(viewer.clock.currentTime);
-  // onTickイベントが何故か時刻が変化していない場合でも発火するので、前回の時刻を保持しておいて変更があったか確認する
+  // onTick may fire even without time changes, so keep previous time and update only when changed
   if (currentTime.getTime() != onTickPrevTime) {
     onTickPrevTime = currentTime.getTime();
 
-    // 対象となるgeotiffデータを確認
+    // Determine the target geotiff data
     let targetIdxTmp = geotiffDataIdx;
     for (let i = 0; i < timeList.length - 1; i++) {
       if (timeList[i] <= currentTime && timeList[i+1] > currentTime) {
@@ -447,7 +501,7 @@ async function animationUpdate() {
       }
     }
 
-    // 表示データの更新がある場合
+    // Update when displayed data changed
     if (targetIdxTmp != geotiffDataIdx) {
       geotiffDataIdx = targetIdxTmp;
 
@@ -476,7 +530,7 @@ async function animationUpdate() {
       }
       
     } else {
-      // 表示割合の更新
+      // Update displayed ratio
       if (pointCloudWaveShader) {
         let mixVal = (currentTime.getTime() - timeList[geotiffDataIdx].getTime()) / (timeList[geotiffDataIdx+1].getTime() - timeList[geotiffDataIdx].getTime());
         pointCloudWaveShader.setUniform("u_mix", mixVal);
@@ -485,9 +539,9 @@ async function animationUpdate() {
   }
 }
 
-// geotiff画像読み込み処理
+// Geotiff image loading process
 async function loadGeotiffData() {
-  // 表示中データの前後3個までのデータを取得
+  // Load target geotiff data frames
   for (let targetIdx = 0; targetIdx < bandNumber; targetIdx++) {
     if (targetIdx < 0 || targetIdx >= timeList.length) continue;
 
@@ -502,13 +556,13 @@ async function loadGeotiffData() {
   }
 }
 
-// 色を取得
+// Get Cesium color object
 function getColor(colorName, alpha) {
   const color = Cesium.Color[colorName.toUpperCase()];
   return Cesium.Color.fromAlpha(color, parseFloat(alpha));
 }
 
-// 設定を反映
+// Apply settings
 $(document).on("click", "#settingBtn", async function () {
   if (model) {
     const rangeMin = Number($("#RangeMin").val());
@@ -526,5 +580,14 @@ $(document).on("click", "#settingBtn", async function () {
 
     model.color = getColor("White", modelTr);
   }
-})
+});
 
+$(document).on("change", "#samplePreset", function () {
+  const nextSamplePresetKey = $(this).val();
+  if (!Object.prototype.hasOwnProperty.call(samplePresets, nextSamplePresetKey)) return;
+  if (nextSamplePresetKey === selectedSamplePresetKey) return;
+
+  const params = new URLSearchParams(window.location.search);
+  params.set("sample", nextSamplePresetKey);
+  window.location.search = params.toString();
+});
