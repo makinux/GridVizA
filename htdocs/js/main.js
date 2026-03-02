@@ -126,12 +126,49 @@ function setupSamplePresetSelector() {
   $samplePreset.val(selectedSamplePresetKey);
 }
 
+function setupToolbarToggle() {
+  const toolbar = document.getElementById("toolbar");
+  const toggleBtn = document.getElementById("toolbarToggle");
+  if (!toolbar || !toggleBtn) return;
+
+  const mobileMediaQuery = window.matchMedia("(max-width: 768px)");
+
+  const updateToolbarToggleLabel = () => {
+    const isCollapsed = toolbar.classList.contains("collapsed");
+    toggleBtn.textContent = isCollapsed ? "Show controls" : "Hide controls";
+    toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
+  };
+
+  const applyResponsiveToolbarState = () => {
+    if (mobileMediaQuery.matches) {
+      toolbar.classList.add("collapsed");
+    } else {
+      toolbar.classList.remove("collapsed");
+    }
+    updateToolbarToggleLabel();
+  };
+
+  toggleBtn.addEventListener("click", () => {
+    toolbar.classList.toggle("collapsed");
+    updateToolbarToggleLabel();
+  });
+
+  if (typeof mobileMediaQuery.addEventListener === "function") {
+    mobileMediaQuery.addEventListener("change", applyResponsiveToolbarState);
+  } else if (typeof mobileMediaQuery.addListener === "function") {
+    mobileMediaQuery.addListener(applyResponsiveToolbarState);
+  }
+
+  applyResponsiveToolbarState();
+}
+
 function isZScaleInverted() {
   return $("#invertZScale").is(":checked");
 }
 
 async function init() {
   setupSamplePresetSelector();
+  setupToolbarToggle();
 
   $("#RangeMin").val(zmin);
   $("#RangeMax").val(zmax);

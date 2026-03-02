@@ -28,6 +28,16 @@
             color: #fff;
         }
 
+        #toolbarToggle {
+            display: none;
+            width: 100%;
+            margin-bottom: 6px;
+        }
+
+        #toolbarContent {
+            display: block;
+        }
+
         input {
             width: 70px;
         }
@@ -43,6 +53,48 @@
         #tilePath, #terrainPath {
             width: 200px;
         }
+
+        @media (max-width: 768px) {
+            #toolbar {
+                max-width: calc(100vw - 10px);
+                padding: 6px;
+                background: rgba(26, 33, 41, 0.82);
+                border-radius: 6px;
+            }
+
+            .cesium-viewer .cesium-widget-credits {
+                display: none !important;
+            }
+
+            .cesium-viewer-fullscreenContainer,
+            .cesium-viewer-vrContainer {
+                right: 8px;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+                z-index: 20;
+            }
+
+            #toolbarToggle {
+                display: block;
+            }
+
+            #toolbar.collapsed #toolbarContent {
+                display: none;
+            }
+
+            #toolbarContent {
+                max-height: 60vh;
+                overflow: auto;
+            }
+
+            #toolbar td {
+                font-size: 12px;
+                white-space: nowrap;
+            }
+
+            #samplePreset {
+                width: 180px;
+            }
+        }
     </style>
     <script src="./js/lib/Cesium-1.109/Cesium.js"></script>
     <link href="./js/lib/Cesium-1.109/Widgets/widgets.css" rel="stylesheet">
@@ -54,69 +106,72 @@
 <body>
     <div id="cesiumContainer">
         <div id="toolbar">
-            <table>
-                <tr>
-                    <td>Sample preset</td>
-                    <td>
-                        <select id="samplePreset"></select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Minimum</td>
-                    <td>
-                        <input type="text" id="RangeMin">
-                    </td>
-                </tr>
-                <tr>
-                    <td>Maximum</td>
-                    <td>
-                        <input type="text" id="RangeMax">
-                    </td>
-                </tr>
-                <tr>
-                    <td>Curvature coefficient</td>
-                    <td>
-                        <input type="text" id="curvatureArg">
-                    </td>
-                </tr>
-                <tr>
-                    <td>Slope-angle coefficient</td>
-                    <td>
-                        <input type="text" id="slopeArg">
-                    </td>
-                </tr>
-                <tr>
-                    <td>Color-map opacity</td>
-                    <td>
-                        <input type="text" id="depthTr">
-                    </td>
-                </tr>
-                <tr>
-                    <td>Contour interval</td>
-                    <td>
-                        <input type="text" id="contourInterval">
-                    </td>
-                </tr>
-                <tr>
-                    <td>Model opacity</td>
-                    <td>
-                        <input type="text" id="modelTr">
-                    </td>
-                </tr>
-                <tr>
-                    <td>Invert Z scale</td>
-                    <td>
-                        <input type="checkbox" id="invertZScale">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <button id="settingBtn">Apply</button>
-                    </td>
-                    <td>
-                    </td>
-                </tr>
-            </table>
+            <button id="toolbarToggle" type="button" aria-controls="toolbarContent" aria-expanded="true">Hide controls</button>
+            <div id="toolbarContent">
+                <table>
+                    <tr>
+                        <td>Sample preset</td>
+                        <td>
+                            <select id="samplePreset"></select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Minimum</td>
+                        <td>
+                            <input type="text" id="RangeMin">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Maximum</td>
+                        <td>
+                            <input type="text" id="RangeMax">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Curvature coefficient</td>
+                        <td>
+                            <input type="text" id="curvatureArg">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Slope-angle coefficient</td>
+                        <td>
+                            <input type="text" id="slopeArg">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Color-map opacity</td>
+                        <td>
+                            <input type="text" id="depthTr">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Contour interval</td>
+                        <td>
+                            <input type="text" id="contourInterval">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Model opacity</td>
+                        <td>
+                            <input type="text" id="modelTr">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Invert Z scale</td>
+                        <td>
+                            <input type="checkbox" id="invertZScale">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button id="settingBtn">Apply</button>
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 </body>
