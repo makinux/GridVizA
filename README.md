@@ -1,112 +1,165 @@
 # 3D Animation of Time-Series Data
 
-This is an application that visualizes time-series data by animating it on the Cesium 3D globe.
+This application visualizes time-series Geotiff data as animated color and height changes on a glTF model in the Cesium globe.
 
-See the instructions below for operation.
+## Features
 
-## Prerequisites
+- Time-series playback synchronized with Cesium timeline
+- Linear interpolation between consecutive Geotiff frames
+- Sample preset selection from UI (`Sample preset` dropdown)
+- URL preset switching with query parameter (`?sample=<preset_key>`)
+- Auto-loop playback speed normalized to about 10 seconds per full timeline
+- FPS display enabled (Cesium debug FPS counter)
 
-Prepare the data and settings. The repository includes the following two prepared sample datasets:
+## Included sample datasets
 
-- `htdocs/data/sample_graphcast`: Global December 2023 time-series pressure data predicted by the weather forecast AI model [GraphCast](https://deepmind.google/discover/blog/graphcast-ai-model-for-faster-and-more-accurate-global-weather-forecasting/)
-- `htdocs/data/sample_202308`: Time-series pressure and rainfall data for Typhoon 7 in August 2023 (source: [Meteorological Agency data published in the Kyoto University Biosphere Database](https://database.rish.kyoto-u.ac.jp/arch/jmadata/gpv-netcdf.html))
+The repository currently includes these sample datasets:
 
-### Time-series Geotiff data
+- `htdocs/data/sample_graphcast`
+  - Global pressure forecast data (GraphCast, Dec 2023)
+- `htdocs/data/sample_202308`
+  - Typhoon 7 pressure/rain data (Aug 2023)
+- `htdocs/data/sample_202407`
+  - Pressure sample data (Jul 2024)
 
-Prepare Geotiff files for the time-series data you want to animate.
+Sample Geotiff directories:
 
-Expected Geotiff format:
+- `htdocs/data/sample_graphcast/pres_geotiff`
+- `htdocs/data/sample_202308/pres_geotiff`
+- `htdocs/data/sample_202308/rain_geotiff`
+- `htdocs/data/sample_202407/pres_geotiff`
+
+Sample glTF models:
+
+- `htdocs/data/sample_graphcast/model_mesh.glb`
+- `htdocs/data/sample_graphcast/model_pointcloud.glb`
+- `htdocs/data/sample_202308/model_mesh_20230814_20230816.glb`
+- `htdocs/data/sample_202407/model_mesh_20240711_20240713.glb`
+
+## Input data requirements
+
+Prepare one Geotiff file per timestamp.
 
 - Extension: `.tif`
 - Band count: `1`
-- Spatial reference system: `WGS84` (`EPSG:4326`)
-- Data type: 64-bit floating point (`Float64`)
+- CRS: `WGS84` (`EPSG:4326`)
+- Data type: `Float64` (recommended by current samples/workflow)
 
-Place Geotiff files for each time point in a directory and set them under `htdocs/data/`.
-Name files using sequential numbers starting from `1` (example: `1.tif`, `2.tif`, `3.tif`, ... `40.tif`).
+Place files under `htdocs/data/<your_dataset>/` and name them sequentially:
+`1.tif`, `2.tif`, `3.tif`, ...
 
-Sample Geotiff time-series are stored in:
+## Create glTF from Geotiff
 
-- `htdocs/data/sample_graphcast/pres_geotiff` (pressure data)
-- `htdocs/data/sample_202308/pres_geotiff` (pressure data)
-- `htdocs/data/sample_202308/rain_geotiff` (rainfall data)
+If you use your own data, generate a point-cloud or mesh glTF from the first Geotiff frame.
 
-### Create glTF model
-
-Create point-cloud or mesh glTF models to render and animate in Cesium.
-
-If you use custom time-series Geotiff data, use the Python scripts in the `src` directory to generate a glTF model from Geotiff.
-
-Install required libraries in a Python environment:
+Install Python dependencies:
 
 ```bash
-pip install numpy pyproj pygltflib open3d
+pip install numpy pygltflib pymap3d open3d gdal
 ```
 
-Generate the glTF model with:
+Generate models:
 
-- Point-cloud model
+- Point cloud:
 
-  ```bash
-  python src/geotiff2gltfPointCloud.py htdocs/data/{Geotiff directory}/1.tif htdocs/data/{output glTF model name}.glb
-  ```
+```bash
+python src/geotiff2gltfPointCloud.py htdocs/data/<geotiff_dir>/1.tif htdocs/data/<output_name>.glb
+```
 
-- Mesh model
+- Mesh:
 
-  ```bash
-  python src/geotiff2gltfMesh.py htdocs/data/{Geotiff directory}/1.tif htdocs/data/{output glTF model name}.glb
-  ```
+```bash
+python src/geotiff2gltfMesh.py htdocs/data/<geotiff_dir>/1.tif htdocs/data/<output_name>.glb
+```
 
-Place generated glTF models in `htdocs/data/`.
+## Configure presets (`htdocs/js/main.js`)
 
-Included sample models:
+The app now uses `samplePresets` instead of a single hard-coded dataset.
+Each preset defines:
 
-- `htdocs/data/sample_graphcast/model_pointcloud.glb` (point-cloud model)
-- `htdocs/data/sample_graphcast/model_mesh.glb` (mesh model)
-- `htdocs/data/sample_202308/model_mesh_20230814_20230816.glb` (mesh model)
+- `label`
+- `modelPath`
+- `geotiffUrl`
+- `startDateTime`
+- `endDateTime`
+- `timeStep`
+- `heightBuf`
+- `heightOffset`
+- `zscale`
+- `zmin`
+- `zmax`
 
-### Configuration
-
-Set configuration items in `htdocs/js/main.js`.
+Minimal preset example:
 
 ```js
-// ---------- Preset settings (Global pressure data predicted by GraphCast for Dec 2023) ---------------------------
-
-const modelPath = "./data/sample_graphcast/model_mesh.glb"; // glTF model path
-
-const geotiffUrl = "./data/sample_graphcast/pres_geotiff"; // Geotiff data source directory (${geotiffUrl}/1.tif, ${geotiffUrl}/2.tif, ...)
-const startDateTime = Date.parse("2023/12/07 06:00:00"); // Animation start datetime
-const endDateTime = Date.parse("2023/12/17 03:00:00"); // Animation end datetime
-const timeStep = 6; // Time step in hours
-
-const heightBuf = "10000.0"; // Height scale
-const heightOffset = "10000.0"; // Height offset
-
-const zscale = "1.0"; // Data value scale
-const zmin = "947.253515625"; // Minimum data value (after z-scale is applied)
-const zmax = "1058.2825"; // Maximum data value (after z-scale is applied)
+const samplePresets = {
+  my_preset: {
+    label: "My dataset",
+    modelPath: "./data/my_dataset/model_mesh.glb",
+    geotiffUrl: "./data/my_dataset/pres_geotiff",
+    startDateTime: "2026/01/01 00:00:00",
+    endDateTime: "2026/01/01 23:00:00",
+    timeStep: 1,
+    heightBuf: "10000.0",
+    heightOffset: "10000.0",
+    zscale: "1.0",
+    zmin: "0.0",
+    zmax: "100.0",
+  },
+};
 ```
 
-This repository includes sample settings in `htdocs/js/main.js`; use those when running sample data.
+Set default preset with `defaultSamplePresetKey`.
+You can also open directly with a preset key:
 
-## Running instructions
+```text
+http://localhost/?sample=my_preset
+```
 
-1. Place the `htdocs` directory on a web server. If Docker is available, run `docker compose up` in the `docker` directory to launch a server.
+Current preset keys in source:
 
-2. Open your web server URL and load the app page. For Docker, open `http://localhost`.
+- `graphcast_mesh_pressure`
+- `graphcast_pointcloud_pressure`
+- `typhoon7_pressure_202308`
+- `typhoon7_rain_202308`
+- `pressure_202407`
 
-3. Time-series data loading starts automatically when the page opens; wait until loading finishes to see the point-cloud or mesh glTF model.
+## Run
 
-4. Press play on the bottom time-series slider to start animation.
+### Docker
 
-5. You can adjust display settings from the settings UI in the top-left corner. Enter values and click `Apply` to reflect the settings.
+```bash
+cd docker
+docker compose up -d --build
+```
 
-   Settings:
+Open `http://localhost`.
 
-   - Minimum value: minimum value of the time-series data; controls color map range.
-   - Maximum value: maximum value of the time-series data; controls color map range.
-   - Curvature coefficient: coefficient for CS terrain curvature calculation; higher values emphasize the CS terrain shape.
-   - Slope-angle coefficient: coefficient for CS terrain slope-angle calculation; higher values emphasize the CS terrain shape.
-   - Color-map opacity: opacity of the color map.
-   - Contour interval: interval between contour lines; `0` hides contour lines.
-   - Model opacity: opacity of the glTF model.
+Stop:
+
+```bash
+docker compose down
+```
+
+### Without Docker
+
+Serve `htdocs/` with any HTTP server and open `index.html` through that server (do not use `file://`).
+
+## Usage
+
+1. Open the page and wait until Geotiff loading completes.
+2. Animation starts automatically (loop playback).
+3. Switch dataset from `Sample preset` or by `?sample=...`.
+4. Adjust visual parameters in the top-left toolbar, then click `Apply`.
+5. Check FPS in the top-left (Cesium debug FPS counter).
+
+Toolbar parameters:
+
+- Minimum: lower bound of color mapping range
+- Maximum: upper bound of color mapping range
+- Curvature coefficient: CS curvature emphasis
+- Slope-angle coefficient: CS slope emphasis
+- Color-map opacity: blend strength of the color map
+- Contour interval: contour spacing (`0` disables contours)
+- Model opacity: glTF model transparency
+- Invert Z scale: mirrors vertical shape within the preset Z range

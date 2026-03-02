@@ -82,7 +82,7 @@ const endDateTime = Date.parse(selectedSamplePreset.endDateTime); // Animation e
 const timeStep = selectedSamplePreset.timeStep; // Time step in hours for time-series data
 const heightBuf = selectedSamplePreset.heightBuf; // Height scale
 const heightOffset = selectedSamplePreset.heightOffset; // Height offset
-const zscale = selectedSamplePreset.zscale; // Value scale
+const zscale = Math.abs(Number(selectedSamplePreset.zscale)); // Value scale (magnitude)
 const zmin = selectedSamplePreset.zmin; // Minimum time-series value (after z-scale)
 const zmax = selectedSamplePreset.zmax; // Maximum time-series value (after z-scale)
 const targetLoopSeconds = 10; // Target playback loop duration in real seconds
@@ -126,6 +126,10 @@ function setupSamplePresetSelector() {
   $samplePreset.val(selectedSamplePresetKey);
 }
 
+function isZScaleInverted() {
+  return $("#invertZScale").is(":checked");
+}
+
 async function init() {
   setupSamplePresetSelector();
 
@@ -136,6 +140,7 @@ async function init() {
   $("#depthTr").val(0.5);
   $("#contourInterval").val(0);
   $("#modelTr").val(1.0);
+  $("#invertZScale").prop("checked", false);
 
   viewer = new Cesium.Viewer("cesiumContainer", {
     fullscreenButton: true,
@@ -145,6 +150,7 @@ async function init() {
     }))
   });
   var scene = viewer.scene;
+  scene.debugShowFramesPerSecond = true;
     // Hide celestial visuals
     scene.sunBloom = false; // Hide sun bloom
     scene.sun.show = false; // Hide the sun
@@ -203,6 +209,14 @@ async function init() {
         type: Cesium.UniformType.VEC2,
         value: new Cesium.Cartesian2(rangeMin, rangeMax),
       },
+      u_zScale: {
+        type: Cesium.UniformType.FLOAT,
+        value: zscale,
+      },
+      u_invertZScale: {
+        type: Cesium.UniformType.FLOAT,
+        value: isZScaleInverted() ? 1.0 : 0.0,
+      },
       u_argv: {
         type: Cesium.UniformType.VEC4,
         value: new Cesium.Cartesian4(3.0 * curvatureArg, 1.0 * slopeArg, 0.0, 0.0),
@@ -246,7 +260,7 @@ async function init() {
       float get_tex_value(vec2 uv_pos) {
         float zval_1 = texture(u_geotiffTexture_1, uv_pos)[0];
         float zval_2 = texture(u_geotiffTexture_2, uv_pos)[0];
-        return ((zval_1 * (1.0 - u_mix)) + (zval_2 * u_mix)) * ${zscale};
+        return ((zval_1 * (1.0 - u_mix)) + (zval_2 * u_mix)) * u_zScale;
       }
 
       vec3 geodeticToECEF(float lon, float lat, float height) {
@@ -269,8 +283,13 @@ async function init() {
         vec2 geotiff_idx = vsInput.attributes.idx;
         vec2 uv_pos = vec2(float(geotiff_idx.x) / ${geotiffDataSize.width.toFixed(1)}, float(geotiff_idx.y) / ${geotiffDataSize.height.toFixed(1)});
         float zval = get_tex_value(uv_pos);
+        float zvalForHeight = zval;
+        if (u_invertZScale > 0.5) {
+          // Mirror height within [zmin, zmax] so geometry stays above the globe.
+          zvalForHeight = (${zmin} + ${zmax}) - zval;
+        }
 
-        float newz = ${heightOffset} + ((zval - ${zmin})  * ${heightBuf});
+        float newz = ${heightOffset} + ((zvalForHeight - ${zmin})  * ${heightBuf});
         vec3 newXyz = geodeticToECEF(lonlat.x, lonlat.y, newz);
         vsOutput.positionMC.x = newXyz.x;
         vsOutput.positionMC.y = newXyz.y;
@@ -313,7 +332,7 @@ async function init() {
       float get_tex_value(vec2 uv_pos) {
         float zval_1 = texture(u_geotiffTexture_1, uv_pos)[0];
         float zval_2 = texture(u_geotiffTexture_2, uv_pos)[0];
-        return ((zval_1 * (1.0 - u_mix)) + (zval_2 * u_mix)) * ${zscale};
+        return ((zval_1 * (1.0 - u_mix)) + (zval_2 * u_mix)) * u_zScale;
       } // 40
 
       float conv(mat3 a, mat3 b){
@@ -574,6 +593,8 @@ $(document).on("click", "#settingBtn", async function () {
     const modelTr = Number($("#modelTr").val());
 
     pointCloudWaveShader.setUniform("u_range", new Cesium.Cartesian2(rangeMin, rangeMax));
+    pointCloudWaveShader.setUniform("u_zScale", zscale);
+    pointCloudWaveShader.setUniform("u_invertZScale", isZScaleInverted() ? 1.0 : 0.0);
     pointCloudWaveShader.setUniform("u_argv", new Cesium.Cartesian4(3.0 * curvatureArg, 1.0 * slopeArg, 0.0, 0.0));
     pointCloudWaveShader.setUniform("u_depthTr", depthTr);
     pointCloudWaveShader.setUniform("u_contourInterval", contourInterval);
